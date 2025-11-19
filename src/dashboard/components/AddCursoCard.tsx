@@ -1,5 +1,4 @@
 import type { Curso } from "@/types/types";
-import { useState } from "react";
 
 interface Props {
   curso: Curso;
@@ -7,11 +6,13 @@ interface Props {
   onToggle: () => void;
   disabled: boolean;
 }
-export const AddCursoCard = ({ curso, selected, onToggle, disabled }: Props) => {
-  const [availableSpots, setAvailableSpots] = useState(
-    curso.limiteCupos - curso.matriculados
-  );
-
+export const AddCursoCard = ({
+  curso,
+  selected,
+  onToggle,
+  disabled,
+}: Props) => {
+  const availableSpots = curso.limiteCupos - curso.matriculados;
 
   return (
     <button
@@ -38,7 +39,7 @@ export const AddCursoCard = ({ curso, selected, onToggle, disabled }: Props) => 
             <h4 className="font-medium text-sm text-foreground truncate">
               {curso.nombre}
             </h4>
-            <span className="text-xs font-semibold text-accent flex-shrink-0">
+            <span className="text-xs font-semibold text-accent-foreground flex-shrink-0">
               {curso.creditos}cr
             </span>
           </div>

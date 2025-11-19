@@ -16,4 +16,7 @@ export interface Estudiante {
   matriculado: boolean;
   creditosMatriculados: number;
   creditosPermitidos: number;
+  cursosMatriculados: number[];
 }
+
+export type ViewMode = "list" | "calendar";

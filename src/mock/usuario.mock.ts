@@ -9,5 +9,6 @@ export const usuariosMock: Estudiante[] = [
     matriculado: true,
     creditosPermitidos: 20,
     creditosMatriculados: 0,
+    cursosMatriculados: [],
   },
 ];

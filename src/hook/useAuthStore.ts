@@ -1,4 +1,3 @@
-import * as z from "zod/v4";
 import {
   clearErrorMessage,
   onChecking,
@@ -6,18 +5,8 @@ import {
   onLogout,
 } from "@/store/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "./hooks";
-
-const EstudianteSchema = z.object({
-  id: z.number(),
-  nombre: z.string(),
-  carrera: z.string(),
-  semestre: z.number(),
-  matriculado: z.boolean(),
-  creditosMatriculados: z.number(),
-  creditosPermitidos: z.number(),
-});
-
-const EstudianteSchemaArray = z.array(EstudianteSchema);
+import { EstudianteAuthSchemaArray } from "@/types/schemas";
+import { onCleanLogout } from "@/store/dashboard/dashboardSlice";
 
 export const useAuthStore = () => {
   const { status, user, errorMessage } = useAppSelector((state) => state.auth);
@@ -36,7 +25,7 @@ export const useAuthStore = () => {
       return;
     }
 
-    const result = EstudianteSchemaArray.safeParse(JSON.parse(backend));
+    const result = EstudianteAuthSchemaArray.safeParse(JSON.parse(backend));
     if (result.error) {
       dispatch(onLogout("No hay conexión a internet"));
       setTimeout(() => {
@@ -87,7 +76,7 @@ export const useAuthStore = () => {
       return;
     }
 
-    const result = EstudianteSchemaArray.safeParse(JSON.parse(backend));
+    const result = EstudianteAuthSchemaArray.safeParse(JSON.parse(backend));
     if (result.error) {
       dispatch(onLogout("No hay conexión a internet"));
       setTimeout(() => {
@@ -112,6 +101,7 @@ export const useAuthStore = () => {
 
   const startLogout = () => {
     dispatch(onLogout());
+    dispatch(onCleanLogout());
     localStorage.removeItem("userId");
   };
 

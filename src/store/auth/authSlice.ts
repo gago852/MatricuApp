@@ -1,11 +1,18 @@
-import type { Estudiante } from "@/types/types";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 type AuthStatus = "authenticated" | "not-authenticated" | "checking";
+
+export interface AuthStudent {
+  id: number;
+  nombre: string;
+  carrera: string;
+  semestre: number;
+  matriculado: boolean;
+}
 // Define a type for the slice state
 interface AuthState {
   status: AuthStatus;
-  user: Estudiante | null;
+  user: AuthStudent | null;
   errorMessage: string | undefined;
 }
 
@@ -25,7 +32,7 @@ export const authSlice = createSlice({
       state.user = null;
       state.errorMessage = undefined;
     },
-    onLogin: (state, { payload }: PayloadAction<Estudiante>) => {
+    onLogin: (state, { payload }: PayloadAction<AuthStudent>) => {
       state.status = "authenticated";
       state.user = payload;
       state.errorMessage = undefined;

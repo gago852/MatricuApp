@@ -7,21 +7,77 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Curso } from "@/types/types";
+import { useDashboardStore } from "@/hook/useDashboardStore";
+import { useAuthStore } from "@/hook/useAuthStore";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const AddCursoPanel = () => {
+  const { cursos, creditosMatriculados, creditosPermitidos } =
+    useDashboardStore();
+  const { user } = useAuthStore();
+  const { semestre, matriculado } = user || { semestre: 0, matriculado: false };
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
-  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
-  const [availableCredits, setAvailableCredits] = useState(20);
-  const [selectedCredits, setSelectedCredits] = useState(0);
-  const [filteredCourses, setFilteredCourses] = useState<Curso[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
+  const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
+  const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
+  const [filteredCourses, setFilteredCourses] = useState<Curso[]>(cursos);
 
-  const handleToggleCourse = (id: number) => {
-    console.log({ id });
+  const cursosAnteriores = useMemo(() => {
+    return filteredCourses.filter((curso) => curso.semestre === semestre - 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const cursosPrerequisitos = useMemo(() => {
+    return cursosAnteriores.every((curso) => selectedCourses.includes(curso));
+  }, [selectedCourses, cursosAnteriores]);
+
+  const isCursoHabilitado = (curso: (typeof cursos)[0]) => {
+    const yaSeleccionado = selectedCourses.includes(curso);
+
+    // Si ya está seleccionado, siempre habilitado (para poder deseleccionar)
+    if (yaSeleccionado) return true;
+
+    // Cursos del semestre anterior siempre habilitados
+    if (curso.semestre === semestre - 1)
+      return selectedCredits + curso.creditos <= availableCredits;
+
+    // Cursos de semestres superiores solo si prerequisitos completos
+    if (curso.semestre >= semestre) {
+      return (
+        cursosPrerequisitos &&
+        selectedCredits + curso.creditos <= availableCredits
+      );
+    }
+
+    // Cursos de semestres muy anteriores deshabilitados
+    return false;
+  };
+
+  const handleToggleCourse = (cursoFunction: Curso) => {
+    if (selectedCourses.includes(cursoFunction)) {
+      const cursosToRemove = selectedCourses.filter(
+        (curso) => curso.semestre <= cursoFunction.semestre
+      );
+      const creditos = cursosToRemove.reduce(
+        (total, curso) => total + curso.creditos,
+        0
+      );
+
+      const creditosToRemove = cursoFunction.creditos;
+
+      setSelectedCredits(creditos - creditosToRemove);
+      setSelectedCourses(
+        cursosToRemove.filter((curso) => curso.id !== cursoFunction.id)
+      );
+    } else {
+      const creditos = cursoFunction.creditos;
+      setSelectedCredits((prev) => prev + creditos);
+      setSelectedCourses([...selectedCourses, cursoFunction]);
+    }
   };
 
   const handleOnClosePanel = () => {
@@ -31,6 +87,16 @@ export const AddCursoPanel = () => {
   const handleAddCourses = () => {
     console.log("Add courses");
   };
+
+  useEffect(() => {
+    setFilteredCourses(cursos);
+  }, [cursos]);
+  useEffect(() => {
+    setAvailableCredits(creditosPermitidos);
+  }, [creditosPermitidos]);
+  useEffect(() => {
+    setSelectedCredits(creditosMatriculados);
+  }, [creditosMatriculados]);
 
   return (
     <div className="w-96 border-l border-border bg-card flex flex-col overflow-hidden">
@@ -59,7 +125,9 @@ export const AddCursoPanel = () => {
           </p>
           <p className="text-muted-foreground">
             Creditos seleccionados:{" "}
-            <span className="font-semibold text-accent">{selectedCredits}</span>{" "}
+            <span className="font-semibold text-accent-foreground">
+              {selectedCredits}
+            </span>{" "}
             creditos
           </p>
         </div>
@@ -76,16 +144,21 @@ export const AddCursoPanel = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="w-full">
-              Semester {semesterFilter}
+              {semesterFilter
+                ? `Semestre ${semesterFilter}`
+                : "Todos los semestres"}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuItem onClick={() => setSemesterFilter(null)}>
+              Todos los semestres
+            </DropdownMenuItem>
             {SEMESTERS.map((sem) => (
               <DropdownMenuItem
                 key={sem}
                 onClick={() => setSemesterFilter(sem)}
               >
-                Semester {sem}
+                Semestre {sem}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -102,18 +175,19 @@ export const AddCursoPanel = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredCourses.map((course) => (
-              <AddCursoCard
-                key={course.id}
-                curso={course}
-                selected={selectedCourses.includes(course.id)}
-                onToggle={() => handleToggleCourse(course.id)}
-                disabled={
-                  selectedCredits + course.creditos > availableCredits &&
-                  !selectedCourses.includes(course.id)
-                }
-              />
-            ))}
+            {filteredCourses.map((course) => {
+              const isDisabled = isCursoHabilitado(course);
+
+              return (
+                <AddCursoCard
+                  key={course.id}
+                  curso={course}
+                  selected={selectedCourses.includes(course)}
+                  onToggle={() => handleToggleCourse(course)}
+                  disabled={!isDisabled}
+                />
+              );
+            })}
           </div>
         )}
       </div>
