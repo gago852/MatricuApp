@@ -41,13 +41,13 @@ export const CursoPanel = () => {
       <div className="px-6 pt-4 pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-foreground">Credits Used</p>
+            <p className="text-sm font-medium text-foreground">Créditos</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl font-bold text-primary">
                 {usedCredits}
               </span>
               <span className="text-sm text-muted-foreground">
-                / {maxCredits} max
+                / {maxCredits} máximo
               </span>
             </div>
           </div>
@@ -80,7 +80,7 @@ export const CursoPanel = () => {
       {/* Enrolled courses section */}
       <div className="px-6 py-4">
         <h2 className="text-lg font-semibold text-foreground mb-4">
-          Enrolled Courses
+          Cursos matriculados
           {enrolledCourseIds.length > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">
               ({enrolledCourseIds.length})
@@ -92,7 +92,7 @@ export const CursoPanel = () => {
         <div className="space-y-3 mb-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Search by name or code..."
+              placeholder="Buscar por nombre o codigo..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="flex-1"
@@ -102,19 +102,19 @@ export const CursoPanel = () => {
                 <Button variant="outline">
                   {semesterFilter !== null
                     ? `Sem. ${semesterFilter}`
-                    : "Semester"}
+                    : "Semestre"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setSemesterFilter(null)}>
-                  All Semesters
+                  Todos los semestres
                 </DropdownMenuItem>
                 {SEMESTERS.map((sem) => (
                   <DropdownMenuItem
                     key={sem}
                     onClick={() => setSemesterFilter(sem)}
                   >
-                    Semester {sem}
+                    Semestre {sem}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -145,7 +145,7 @@ export const CursoPanel = () => {
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Add Courses
+              Agregar cursos
             </Button>
           </div>
         </div>
@@ -157,16 +157,16 @@ export const CursoPanel = () => {
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="text-4xl mb-3">📚</div>
             <p className="text-foreground font-medium mb-1">
-              No courses enrolled
+              No hay cursos matriculados
             </p>
             <p className="text-sm text-muted-foreground mb-4">
-              Click "Add Courses" to browse available courses
+              Click "Agregar cursos" para buscar cursos disponibles
             </p>
             <Button
               onClick={handleOpenCoursesClick}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              Browse Courses
+              Agregar cursos
             </Button>
           </div>
         ) : (

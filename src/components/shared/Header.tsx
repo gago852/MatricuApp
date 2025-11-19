@@ -22,10 +22,10 @@ export const Header = ({ student }: Props) => {
       <div className="flex items-center justify-between h-16 px-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">
-            📚
+            <img src="favicon.png" width="24" />
           </div>
           <span className="text-lg font-semibold text-foreground hidden sm:inline">
-            Enrollment
+            Matricula
           </span>
         </div>
 
@@ -49,7 +49,7 @@ export const Header = ({ student }: Props) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Profile</DropdownMenuLabel>
+            <DropdownMenuLabel>Perfil</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="px-2 py-2 text-sm space-y-1">
               <p className="text-foreground font-medium">{student.nombre}</p>
@@ -59,12 +59,12 @@ export const Header = ({ student }: Props) => {
                 Semestre: {student.semestre}
               </p>
               <p className="text-muted-foreground">
-                Créditos permitidos: {student.creditosPermitidos}
+                Créditos: {student.creditosPermitidos}
               </p>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              <span className="text-destructive">Sign out</span>
+              <span className="text-destructive">Cerrar sesión</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,8 +1,21 @@
-import { DashboardPage } from "./dashboard/DashboardPage";
+import { Provider } from "react-redux";
+import { store } from "./store/store";
+import { useEffect } from "react";
+import { loadBackend } from "./hook/loadBackend";
+import { Toaster } from "./components/ui/sonner";
+import { AppRouter } from "./router/AppRouter";
 
 export const MatricuApp = () => {
+  useEffect(() => {
+    loadBackend();
+  }, []);
+
   return (
-    // <LoginPage />
-    <DashboardPage />
+    <Provider store={store}>
+      <Toaster />
+      {/* <LoginPage /> */}
+      {/* <DashboardPage /> */}
+      <AppRouter />
+    </Provider>
   );
 };

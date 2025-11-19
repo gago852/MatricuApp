@@ -1,17 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useAuthStore } from "@/hook/useAuthStore";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const LoginPage = () => {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const { errorMessage, startLogin } = useAuthStore();
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("login");
-    // setError("Error");
+    startLogin(Number(studentId), password);
   };
+
+  useEffect(() => {
+    if (!errorMessage) return;
+
+    toast.error(errorMessage);
+  }, [errorMessage]);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -44,7 +52,6 @@ export const LoginPage = () => {
               value={studentId}
               onChange={(e) => {
                 setStudentId(e.target.value);
-                setError("");
               }}
               className="w-full"
             />
@@ -64,17 +71,16 @@ export const LoginPage = () => {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                setError("");
               }}
               className="w-full"
             />
           </div>
 
-          {error && (
+          {/* {errorMessage && (
             <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
-              {error}
+              {errorMessage}
             </div>
-          )}
+          )} */}
 
           <Button
             type="submit"

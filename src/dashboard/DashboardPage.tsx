@@ -1,5 +1,4 @@
 import { Header } from "@/components/shared/Header";
-import { usuarioMock } from "@/mock/usuario.mock";
 import { CursoPanel } from "./components/CursoPanel";
 import { useState } from "react";
 import { AddCursoPanel } from "./components/AddCursoPanel";
@@ -11,11 +10,7 @@ export const DashboardPage = () => {
       <Header student={usuarioMock} />
 
       <main className="flex-1 flex overflow-hidden">
-        <div
-          className={`flex-1 flex flex-col overflow-hidden transition-all ${
-            showAddCourses ? "pr-96" : ""
-          }`}
-        >
+        <div className={`flex-1 flex flex-col overflow-hidden transition-all`}>
           <CursoPanel />
         </div>
 

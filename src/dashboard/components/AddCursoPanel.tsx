@@ -37,7 +37,9 @@ export const AddCursoPanel = () => {
       {/* Header */}
       <div className="px-4 py-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-foreground">Add Courses</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            Agregar Cursos
+          </h2>
           <Button
             variant="ghost"
             size="sm"
@@ -50,15 +52,15 @@ export const AddCursoPanel = () => {
 
         <div className="text-sm space-y-1">
           <p className="text-muted-foreground">
-            Available credits:{" "}
+            Creditos disponibles:{" "}
             <span className="font-semibold text-foreground">
               {availableCredits}
             </span>
           </p>
           <p className="text-muted-foreground">
-            Selected:{" "}
+            Creditos seleccionados:{" "}
             <span className="font-semibold text-accent">{selectedCredits}</span>{" "}
-            credits
+            creditos
           </p>
         </div>
       </div>
@@ -66,7 +68,7 @@ export const AddCursoPanel = () => {
       {/* Controls */}
       <div className="px-4 py-3 space-y-2 border-b border-border">
         <Input
-          placeholder="Search courses..."
+          placeholder="Buscar cursos..."
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className="text-sm"
@@ -95,7 +97,7 @@ export const AddCursoPanel = () => {
         {filteredCourses.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <p className="text-sm text-muted-foreground">
-              No courses available
+              No hay cursos disponibles
             </p>
           </div>
         ) : (
@@ -123,14 +125,15 @@ export const AddCursoPanel = () => {
           disabled={selectedCourses.length === 0}
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
         >
-          Add {selectedCourses.length > 0 ? `(${selectedCourses.length})` : ""}
+          Agregar{" "}
+          {selectedCourses.length > 0 ? `(${selectedCourses.length})` : ""}
         </Button>
         <Button
           variant="outline"
           onClick={handleOnClosePanel}
           className="w-full"
         >
-          Cancel
+          Cancelar
         </Button>
       </div>
     </div>

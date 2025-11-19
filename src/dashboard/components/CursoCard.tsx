@@ -20,14 +20,14 @@ export const CursoCard = ({ course }: Props) => {
               {course.codigo}
             </span>
             <span className="px-2 py-1 bg-accent/10 text-accent text-xs font-medium rounded">
-              {course.creditos} credits
+              {course.creditos} creditos
             </span>
           </div>
           <h3 className="font-semibold text-foreground mb-1 truncate">
             {course.nombre}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Semester {course.semestre} • {availableSpots} spots available
+            Semestre {course.semestre} • {availableSpots} cupos disponibles
           </p>
         </div>
         <Button
@@ -36,7 +36,7 @@ export const CursoCard = ({ course }: Props) => {
           onClick={handleRemoveCourse}
           className="text-destructive hover:bg-destructive/10"
         >
-          Remove
+          Quitar
         </Button>
       </div>
     </div>

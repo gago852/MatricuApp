@@ -14,5 +14,6 @@ export interface Estudiante {
   carrera: string;
   semestre: number;
   matriculado: boolean;
+  creditosMatriculados: number;
   creditosPermitidos: number;
 }
