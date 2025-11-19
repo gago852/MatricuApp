@@ -14,14 +14,14 @@ export const cursoPanelSlice = createSlice({
   name: "cursoPanel",
   initialState,
   reducers: {
-    onOpenCursoPanel: (state /* action: PayloadAction<number> */) => {
+    openCursoPanel: (state /* action: PayloadAction<number> */) => {
       state.isOpen = true;
     },
-    onCloseCursoPanel: (state /* action: PayloadAction<number> */) => {
+    closeCursoPanel: (state /* action: PayloadAction<number> */) => {
       state.isOpen = false;
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { onOpenCursoPanel } = cursoPanelSlice.actions;
+export const { openCursoPanel, closeCursoPanel } = cursoPanelSlice.actions;
