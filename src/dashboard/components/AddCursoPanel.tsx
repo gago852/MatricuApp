@@ -1,12 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { AddCursoCard } from "./AddCursoCard";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { CursoSearchInput } from "./cursoSearchInput";
+import { CursoSemesterFilter } from "./CursoSemesterFilter";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Curso } from "@/types/types";
 import { useDashboardStore } from "@/hook/useDashboardStore";
@@ -14,8 +9,6 @@ import { useAuthStore } from "@/hook/useAuthStore";
 import { useAppDispatch } from "@/hook/hooks";
 import { closeCursoPanel } from "@/store/dashboard/addCursosSlice";
 import { toast } from "sonner";
-
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const AddCursoPanel = () => {
   const {
@@ -238,34 +231,16 @@ export const AddCursoPanel = () => {
 
           {/* Controls */}
           <div className="px-4 py-3 space-y-2 border-b border-border">
-            <Input
-              placeholder="Buscar cursos..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="text-sm"
+            <CursoSearchInput value={searchValue} onChange={setSearchValue} />
+            <CursoSemesterFilter
+              value={semesterFilter}
+              onChange={handleOnFilter}
+              buttonProps={{
+                variant: "outline",
+                size: "sm",
+                className: "w-full",
+              }}
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full">
-                  {semesterFilter
-                    ? `Semestre ${semesterFilter}`
-                    : "Todos los semestres"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuItem onClick={() => handleOnFilter(null)}>
-                  Todos los semestres
-                </DropdownMenuItem>
-                {SEMESTERS.map((sem) => (
-                  <DropdownMenuItem
-                    key={sem}
-                    onClick={() => handleOnFilter(sem)}
-                  >
-                    Semestre {sem}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
             <Button
               variant="ghost"
               size="sm"

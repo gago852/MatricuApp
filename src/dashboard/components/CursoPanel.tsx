@@ -1,11 +1,6 @@
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { CursoSearchInput } from "./cursoSearchInput";
+import { CursoSemesterFilter } from "./CursoSemesterFilter";
 import { Plus } from "lucide-react";
 import { CursoCard } from "./CursoCard";
 import { memo, useMemo, useState } from "react";
@@ -14,8 +9,6 @@ import { useAppDispatch } from "@/hook/hooks";
 import { openCursoPanel } from "@/store/dashboard/addCursosSlice";
 
 // type ViewMode = "list" | "calendar";
-
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const CursoPanel = memo(() => {
   const {
@@ -113,34 +106,21 @@ export const CursoPanel = memo(() => {
         {/* Controls */}
         <div className="space-y-3 mb-4">
           <div className="flex gap-2">
-            <Input
+            <CursoSearchInput
               placeholder="Buscar por nombre o codigo..."
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={setSearchValue}
               className="flex-1"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {semesterFilter !== null
-                    ? `Sem. ${semesterFilter}`
-                    : "Semestre"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSemesterFilter(null)}>
-                  Todos los semestres
-                </DropdownMenuItem>
-                {SEMESTERS.map((sem) => (
-                  <DropdownMenuItem
-                    key={sem}
-                    onClick={() => setSemesterFilter(sem)}
-                  >
-                    Semestre {sem}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CursoSemesterFilter
+              value={semesterFilter}
+              onChange={setSemesterFilter}
+              align="end"
+              buttonProps={{ variant: "outline" }}
+              placeholder="Semestre"
+              allLabel="Todos los semestres"
+              renderValueLabel={(sem) => `Sem. ${sem}`}
+            />
           </div>
 
           <div className="flex gap-2">
