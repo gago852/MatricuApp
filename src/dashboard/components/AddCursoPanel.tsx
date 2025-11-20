@@ -2,189 +2,27 @@ import { Button } from "@/components/ui/button";
 import { AddCursoCard } from "./AddCursoCard";
 import { CursoSearchInput } from "./cursoSearchInput";
 import { CursoSemesterFilter } from "./CursoSemesterFilter";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Curso } from "@/types/types";
-import { useDashboardStore } from "@/hook/useDashboardStore";
-import { useAuthStore } from "@/hook/useAuthStore";
-import { useAppDispatch } from "@/hook/hooks";
-import { closeCursoPanel } from "@/store/dashboard/addCursosSlice";
-import { toast } from "sonner";
+import { useAddCursoPanel } from "@/dashboard/hook/useAddCursoPanel";
 
 export const AddCursoPanel = () => {
   const {
-    cursos,
-    creditosMatriculados,
-    creditosPermitidos,
-    cursosMatriculados: cursosMatriculadosIds,
-    startAddCursosMatriculados,
-  } = useDashboardStore();
-
-  const initialSelectedCourseIds = useMemo(
-    () => new Set(cursosMatriculadosIds),
-    [cursosMatriculadosIds]
-  );
-
-  const { user } = useAuthStore();
-  const dispatch = useAppDispatch();
-  const { semestre, matriculado } = user || { semestre: 0, matriculado: false };
-  const [searchValue, setSearchValue] = useState("");
-  const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
-  const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
-  const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
-  const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
-  const [filteredCourses, setFilteredCourses] = useState<Curso[]>(() =>
-    cursos.filter((curso) => !initialSelectedCourseIds.has(curso.id))
-  );
-
-  const [confirmAddCourses, setConfirmAddCourses] = useState(false);
-
-  const filterAvailableCourses = useCallback(
-    (lista: Curso[]) =>
-      lista.filter((curso) => !initialSelectedCourseIds.has(curso.id)),
-    [initialSelectedCourseIds]
-  );
-
-  const cursosAnteriores = useMemo(() => {
-    return filteredCourses.filter((curso) => curso.semestre === semestre - 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const cursosPrerequisitos = useMemo(() => {
-    return cursosAnteriores.every((curso) => selectedCourses.includes(curso));
-  }, [selectedCourses, cursosAnteriores]);
-
-  const isCursoHabilitado = (curso: (typeof cursos)[0]) => {
-    const yaSeleccionado = selectedCourses.includes(curso);
-
-    // Si ya está seleccionado, siempre habilitado (para poder deseleccionar)
-    if (yaSeleccionado) return true;
-
-    // Cursos del semestre anterior siempre habilitados
-    if (curso.semestre === semestre - 1)
-      return (
-        selectedCredits + curso.creditos <= availableCredits &&
-        curso.matriculados < curso.limiteCupos
-      );
-
-    // Cursos de semestres superiores solo si prerequisitos completos
-    if (curso.semestre >= semestre) {
-      return (
-        cursosPrerequisitos &&
-        selectedCredits + curso.creditos <= availableCredits &&
-        curso.matriculados < curso.limiteCupos
-      );
-    }
-
-    // Cursos de semestres muy anteriores deshabilitados
-    return false;
-  };
-
-  const handleToggleCourse = (cursoFunction: Curso) => {
-    if (selectedCourses.includes(cursoFunction)) {
-      const cursosToRemove = selectedCourses.filter(
-        (curso) => curso.semestre <= cursoFunction.semestre
-      );
-      const creditos = cursosToRemove.reduce(
-        (total, curso) => total + curso.creditos,
-        0
-      );
-
-      const creditosToRemove = cursoFunction.creditos;
-
-      setSelectedCredits(creditos - creditosToRemove);
-      setSelectedCourses(
-        cursosToRemove.filter((curso) => curso.id !== cursoFunction.id)
-      );
-    } else {
-      const creditos = cursoFunction.creditos;
-      setSelectedCredits((prev) => prev + creditos);
-      setSelectedCourses([...selectedCourses, cursoFunction]);
-    }
-  };
-
-  const handleOnClosePanel = () => {
-    dispatch(closeCursoPanel());
-  };
-
-  const confirmAddCoursesDialog = () => {
-    setConfirmAddCourses(false);
-    startAddCursosMatriculados(selectedCourses);
-    handleOnClosePanel();
-  };
-
-  const handleCancelConfirmDialog = () => {
-    setConfirmAddCourses(false);
-  };
-
-  const handleAddCourses = () => {
-    if (!matriculado) {
-      toast.error("No puedes agregar cursos si no estas matriculado");
-      return;
-    }
-
-    if (selectedCourses.length === 0) {
-      toast.error("No puedes agregar cursos si no seleccionas ninguno");
-      return;
-    }
-
-    if (selectedCredits > availableCredits) {
-      toast.error("No puedes agregar mas creditos de los permitidos");
-      return;
-    }
-
-    setConfirmAddCourses(true);
-  };
-
-  const handleOnFilter = (semestre: number | null) => {
-    setSemesterFilter(semestre);
-    if (!semestre) {
-      setFilteredCourses(filterAvailableCourses(cursos));
-      return;
-    }
-    const filtrados = cursos.filter((curso) => curso.semestre === semestre);
-    setFilteredCourses(filterAvailableCourses(filtrados));
-  };
-
-  const handleClearFilters = () => {
-    setSearchValue("");
-    handleOnFilter(null);
-  };
-
-  const handleOnSearch = useCallback(
-    (searchValue: string) => {
-      if (!searchValue)
-        return setFilteredCourses(filterAvailableCourses(cursos));
-
-      setFilteredCourses(
-        filterAvailableCourses(
-          cursos.filter((curso) =>
-            curso.nombre.toLowerCase().includes(searchValue.toLowerCase())
-          )
-        )
-      );
-    },
-    [cursos, filterAvailableCourses]
-  );
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      handleOnSearch(searchValue);
-    }, 500);
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [searchValue, handleOnSearch]);
-
-  useEffect(() => {
-    setFilteredCourses(filterAvailableCourses(cursos));
-  }, [cursos, filterAvailableCourses]);
-  useEffect(() => {
-    setAvailableCredits(creditosPermitidos);
-  }, [creditosPermitidos]);
-  useEffect(() => {
-    setSelectedCredits(creditosMatriculados);
-    setSelectedCourses([]);
-  }, [creditosMatriculados]);
+    searchValue,
+    setSearchValue,
+    semesterFilter,
+    handleOnFilter,
+    handleClearFilters,
+    filteredCourses,
+    selectedCourses,
+    handleToggleCourse,
+    isCursoHabilitado,
+    handleAddCourses,
+    confirmAddCourses,
+    handleOnClosePanel,
+    confirmAddCoursesDialog,
+    handleCancelConfirmDialog,
+    availableCredits,
+    selectedCredits,
+  } = useAddCursoPanel();
 
   return (
     <>
