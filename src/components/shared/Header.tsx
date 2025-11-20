@@ -19,7 +19,7 @@ export const Header = memo(() => {
     startLogout();
   };
   return (
-    <header className="border-b border-border bg-card">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-card/90 backdrop-blur supports-backdrop-filter:bg-card/70 shadow-sm">
       <div className="flex items-center justify-between h-16 px-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">

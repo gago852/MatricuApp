@@ -6,15 +6,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Calendar, List, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { CursoCard } from "./CursoCard";
-import { toast } from "sonner";
 import { memo, useMemo, useState } from "react";
 import { useDashboardStore } from "@/hook/useDashboardStore";
 import { useAppDispatch } from "@/hook/hooks";
 import { openCursoPanel } from "@/store/dashboard/addCursosSlice";
 
-type ViewMode = "list" | "calendar";
+// type ViewMode = "list" | "calendar";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -26,7 +25,7 @@ export const CursoPanel = memo(() => {
     cursos,
   } = useDashboardStore();
   const dispatch = useAppDispatch();
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  // const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
   const cursosMatriculados = cursos.filter((curso) =>
@@ -47,10 +46,10 @@ export const CursoPanel = memo(() => {
     });
   }, [cursosMatriculados, semesterFilter, searchValue]);
 
-  const handleCalendarClick = () => {
-    // onViewModeChange('calendar')
-    toast.info("Calendar view is under development. Coming soon!");
-  };
+  // const handleCalendarClick = () => {
+  //   // onViewModeChange('calendar')
+  //   toast.info("Calendar view is under development. Coming soon!");
+  // };
 
   const handleOpenCoursesClick = () => {
     dispatch(openCursoPanel());
@@ -145,7 +144,7 @@ export const CursoPanel = memo(() => {
           </div>
 
           <div className="flex gap-2">
-            <div className="flex gap-1 border border-input rounded-md p-1">
+            {/* <div className="flex gap-1 border border-input rounded-md p-1">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -162,7 +161,7 @@ export const CursoPanel = memo(() => {
               >
                 <Calendar className="h-4 w-4" />
               </Button>
-            </div>
+            </div> */}
             <Button
               onClick={handleOpenCoursesClick}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
