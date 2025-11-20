@@ -41,6 +41,21 @@ export const dashboardSlice = createSlice({
       state.isLoading = action.payload;
     },
     onAddCursosMatriculados: (state, action: PayloadAction<Curso[]>) => {
+      state.cursos = state.cursos.map((curso) => {
+        if (
+          action.payload.some(
+            (cursoMatriculado) => cursoMatriculado.id === curso.id
+          )
+        ) {
+          return {
+            ...curso,
+            matriculados: curso.matriculados + 1,
+          };
+        }
+        return {
+          ...curso,
+        };
+      });
       const cursosMatriculadosIds = action.payload.map((curso) => curso.id);
 
       state.cursosMatriculados = cursosMatriculadosIds;
@@ -54,6 +69,18 @@ export const dashboardSlice = createSlice({
       const nuevaLista = state.cursosMatriculados.filter(
         (curso) => curso !== action.payload.id
       );
+
+      state.cursos = state.cursos.map((curso) => {
+        if (curso.id === action.payload.id) {
+          return {
+            ...action.payload,
+          };
+        }
+        return {
+          ...curso,
+        };
+      });
+
       state.cursosMatriculados = nuevaLista;
       state.creditosMatriculados =
         state.creditosMatriculados - action.payload.creditos;

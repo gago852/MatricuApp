@@ -9,22 +9,43 @@ import { Input } from "@/components/ui/input";
 import { Calendar, List, Plus } from "lucide-react";
 import { CursoCard } from "./CursoCard";
 import { toast } from "sonner";
-import type { Curso } from "@/types/types";
-import { useState } from "react";
-
-const enrolledCourseIds = [];
-const courses: Curso[] = [];
+import { useMemo, useState } from "react";
+import { useDashboardStore } from "@/hook/useDashboardStore";
+import { useAppDispatch } from "@/hook/hooks";
+import { openCursoPanel } from "@/store/dashboard/addCursosSlice";
 
 type ViewMode = "list" | "calendar";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const CursoPanel = () => {
+  const {
+    cursosMatriculados: cursosMatriculadosIds,
+    creditosMatriculados,
+    creditosPermitidos,
+    cursos,
+  } = useDashboardStore();
+  const dispatch = useAppDispatch();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
-  const usedCredits = 0;
-  const maxCredits = 20;
+  const cursosMatriculados = cursos.filter((curso) =>
+    cursosMatriculadosIds.includes(curso.id)
+  );
+  const filteredCourses = useMemo(() => {
+    const query = searchValue.trim().toLowerCase();
+
+    return cursosMatriculados.filter((curso) => {
+      const matchSemester =
+        semesterFilter === null || curso.semestre === semesterFilter;
+      const matchQuery =
+        query.length === 0 ||
+        curso.nombre.toLowerCase().includes(query) ||
+        curso.codigo.toLowerCase().includes(query);
+
+      return matchSemester && matchQuery;
+    });
+  }, [cursosMatriculados, semesterFilter, searchValue]);
 
   const handleCalendarClick = () => {
     // onViewModeChange('calendar')
@@ -32,7 +53,7 @@ export const CursoPanel = () => {
   };
 
   const handleOpenCoursesClick = () => {
-    console.log("Add courses");
+    dispatch(openCursoPanel());
   };
 
   return (
@@ -44,10 +65,10 @@ export const CursoPanel = () => {
             <p className="text-sm font-medium text-foreground">Créditos</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl font-bold text-primary">
-                {usedCredits}
+                {creditosMatriculados}
               </span>
               <span className="text-sm text-muted-foreground">
-                / {maxCredits} máximo
+                / {creditosPermitidos} máximo
               </span>
             </div>
           </div>
@@ -69,7 +90,9 @@ export const CursoPanel = () => {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="8"
-                strokeDasharray={`${(usedCredits / maxCredits) * 282.7} 282.7`}
+                strokeDasharray={`${
+                  (creditosMatriculados / creditosPermitidos) * 282.7
+                } 282.7`}
                 className="text-accent transition-all duration-300"
               />
             </svg>
@@ -81,9 +104,9 @@ export const CursoPanel = () => {
       <div className="px-6 py-4">
         <h2 className="text-lg font-semibold text-foreground mb-4">
           Cursos matriculados
-          {enrolledCourseIds.length > 0 && (
+          {cursosMatriculados.length > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({enrolledCourseIds.length})
+              ({cursosMatriculados.length})
             </span>
           )}
         </h2>
@@ -153,7 +176,7 @@ export const CursoPanel = () => {
 
       {/* Courses list */}
       <div className="flex-1 overflow-y-auto px-6 pb-4">
-        {courses.length === 0 ? (
+        {cursosMatriculados.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="text-4xl mb-3">📚</div>
             <p className="text-foreground font-medium mb-1">
@@ -169,10 +192,29 @@ export const CursoPanel = () => {
               Agregar cursos
             </Button>
           </div>
+        ) : filteredCourses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="text-4xl mb-3">🔍</div>
+            <p className="text-foreground font-medium mb-1">
+              No encontramos coincidencias
+            </p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Ajusta el buscador o el semestre para ver otros cursos
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchValue("");
+                setSemesterFilter(null);
+              }}
+            >
+              Limpiar filtros
+            </Button>
+          </div>
         ) : (
           <div className="space-y-2">
-            {courses.map((course) => (
-              <CursoCard course={course} />
+            {filteredCourses.map((course) => (
+              <CursoCard key={course.id} course={course} />
             ))}
           </div>
         )}

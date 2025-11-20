@@ -22,14 +22,28 @@ export const AddCursoPanel = () => {
     cursos,
     creditosMatriculados,
     creditosPermitidos,
+    cursosMatriculados: cursosMatriculadosIds,
     startAddCursosMatriculados,
   } = useDashboardStore();
+
+  const cursosMatriculados = cursosMatriculadosIds.reduce<Curso[]>(
+    (acc, cursoId) => {
+      const curso = cursos.find((curso) => curso.id === cursoId);
+      if (curso) {
+        acc.push(curso);
+      }
+      return acc;
+    },
+    []
+  );
+
   const { user } = useAuthStore();
   const dispatch = useAppDispatch();
   const { semestre, matriculado } = user || { semestre: 0, matriculado: false };
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
-  const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
+  const [selectedCourses, setSelectedCourses] =
+    useState<Curso[]>(cursosMatriculados);
   const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
   const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
   const [filteredCourses, setFilteredCourses] = useState<Curso[]>(cursos);
@@ -99,8 +113,13 @@ export const AddCursoPanel = () => {
   };
 
   const confirmAddCoursesDialog = () => {
+    setConfirmAddCourses(false);
     startAddCursosMatriculados(selectedCourses);
     handleOnClosePanel();
+  };
+
+  const handleCancelConfirmDialog = () => {
+    setConfirmAddCourses(false);
   };
 
   const handleAddCourses = () => {
@@ -119,7 +138,7 @@ export const AddCursoPanel = () => {
       return;
     }
 
-    confirmAddCoursesDialog();
+    setConfirmAddCourses(true);
   };
 
   const handleOnFilter = (semestre: number | null) => {
@@ -130,6 +149,11 @@ export const AddCursoPanel = () => {
     }
     const filtrados = cursos.filter((curso) => curso.semestre === semestre);
     setFilteredCourses(filtrados);
+  };
+
+  const handleClearFilters = () => {
+    setSearchValue("");
+    handleOnFilter(null);
   };
 
   const handleOnSearch = useCallback(
@@ -227,6 +251,15 @@ export const AddCursoPanel = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full"
+            onClick={handleClearFilters}
+            disabled={!searchValue && semesterFilter === null}
+          >
+            Limpiar filtros
+          </Button>
         </div>
 
         {/* Courses list */}
@@ -275,6 +308,55 @@ export const AddCursoPanel = () => {
           </Button>
         </div>
       </div>
+
+      {confirmAddCourses && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-xl space-y-5">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-foreground">
+                Confirmar matriculación
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Vas a matricular {selectedCourses.length}{" "}
+                {selectedCourses.length === 1 ? "curso" : "cursos"} con un total
+                de {selectedCredits} créditos. ¿Deseas continuar?
+              </p>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto rounded-md border border-border bg-muted/40 p-3 space-y-2 text-sm">
+              {selectedCourses.map((curso) => (
+                <div
+                  key={curso.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span className="font-medium text-foreground">
+                    {curso.nombre}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {curso.creditos} cr.
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={handleCancelConfirmDialog}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="w-full sm:w-auto"
+                onClick={confirmAddCoursesDialog}
+              >
+                Confirmar matriculación
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

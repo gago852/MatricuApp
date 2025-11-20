@@ -7,7 +7,7 @@ interface CursoPanelState {
 
 // Define the initial state using that type
 const initialState: CursoPanelState = {
-  isOpen: true,
+  isOpen: false,
 };
 
 export const cursoPanelSlice = createSlice({

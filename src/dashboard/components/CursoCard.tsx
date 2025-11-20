@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useDashboardStore } from "@/hook/useDashboardStore";
 import type { Curso } from "@/types/types";
 
 interface Props {
@@ -6,10 +7,11 @@ interface Props {
 }
 
 export const CursoCard = ({ course }: Props) => {
+  const { startRemoveCursosMatriculados } = useDashboardStore();
   const availableSpots = course.limiteCupos - course.matriculados;
 
   const handleRemoveCourse = () => {
-    console.log("Remove course");
+    startRemoveCursosMatriculados(course);
   };
   return (
     <div className="p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors">

@@ -4,12 +4,7 @@ import {
   setCursos,
 } from "@/store/dashboard/dashboardSlice";
 import type { AppDispatch } from "@/store/store";
-import {
-  CursoSchemaArray,
-  EstudianteAuthSchemaArray,
-  EstudianteSchema,
-  EstudianteSchemaArray,
-} from "@/types/schemas";
+import { CursoSchemaArray, EstudianteSchemaArray } from "@/types/schemas";
 
 export const loadCursos = (dispatch: AppDispatch) => {
   const cursos = localStorage.getItem("cursos");
