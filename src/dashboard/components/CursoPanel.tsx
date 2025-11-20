@@ -88,6 +88,11 @@ export const CursoPanel = memo(() => {
                 className="text-accent-foreground transition-all duration-300"
               />
             </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-sm font-semibold">
+                {creditosMatriculados}/{creditosPermitidos}
+              </span>
+            </div>
           </div>
         </div>
       </div>
