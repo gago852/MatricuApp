@@ -93,7 +93,7 @@ export const CursoPanel = () => {
                 strokeDasharray={`${
                   (creditosMatriculados / creditosPermitidos) * 282.7
                 } 282.7`}
-                className="text-accent transition-all duration-300"
+                className="text-accent-foreground transition-all duration-300"
               />
             </svg>
           </div>
