@@ -1,5 +1,5 @@
 import {
-  onAddCursosMatriculados,
+  onHydrateCursosMatriculados,
   setCreditosPermitidosUsuario,
   setCursos,
 } from "@/store/dashboard/dashboardSlice";
@@ -41,5 +41,5 @@ export const loadEstudiante = (dispatch: AppDispatch, userId: number) => {
 
   if (!cursosMatriculados) return;
 
-  dispatch(onAddCursosMatriculados(cursosMatriculados));
+  dispatch(onHydrateCursosMatriculados(cursosMatriculados));
 };

@@ -41,6 +41,8 @@ export const dashboardSlice = createSlice({
       state.isLoading = action.payload;
     },
     onAddCursosMatriculados: (state, action: PayloadAction<Curso[]>) => {
+      if (action.payload.length === 0) return;
+
       state.cursos = state.cursos.map((curso) => {
         if (
           action.payload.some(
@@ -56,14 +58,17 @@ export const dashboardSlice = createSlice({
           ...curso,
         };
       });
-      const cursosMatriculadosIds = action.payload.map((curso) => curso.id);
 
-      state.cursosMatriculados = cursosMatriculadosIds;
+      const nuevosIds = action.payload.map((curso) => curso.id);
+      state.cursosMatriculados = Array.from(
+        new Set([...state.cursosMatriculados, ...nuevosIds])
+      );
 
-      state.creditosMatriculados = action.payload.reduce(
+      const creditosAgregados = action.payload.reduce(
         (total, curso) => total + curso.creditos,
         0
       );
+      state.creditosMatriculados += creditosAgregados;
     },
     onRemoveCursoMatriculados: (state, action: PayloadAction<Curso>) => {
       const nuevaLista = state.cursosMatriculados.filter(
@@ -82,8 +87,20 @@ export const dashboardSlice = createSlice({
       });
 
       state.cursosMatriculados = nuevaLista;
-      state.creditosMatriculados =
-        state.creditosMatriculados - action.payload.creditos;
+      state.creditosMatriculados = Math.max(
+        state.creditosMatriculados - action.payload.creditos,
+        0
+      );
+    },
+    onHydrateCursosMatriculados: (state, action: PayloadAction<Curso[]>) => {
+      const idsUnicos = Array.from(
+        new Set(action.payload.map((curso) => curso.id))
+      );
+      state.cursosMatriculados = idsUnicos;
+      state.creditosMatriculados = action.payload.reduce(
+        (total, curso) => total + curso.creditos,
+        0
+      );
     },
     onSetErrorMessage: (state, action: PayloadAction<string>) => {
       state.errorMessage = action.payload;
@@ -103,6 +120,7 @@ export const dashboardSlice = createSlice({
 export const {
   onAddCursosMatriculados,
   onRemoveCursoMatriculados,
+  onHydrateCursosMatriculados,
   onSetErrorMessage,
   setCreditosPermitidosUsuario,
   setCursos,

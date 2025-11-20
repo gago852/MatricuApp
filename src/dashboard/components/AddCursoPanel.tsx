@@ -26,15 +26,9 @@ export const AddCursoPanel = () => {
     startAddCursosMatriculados,
   } = useDashboardStore();
 
-  const cursosMatriculados = cursosMatriculadosIds.reduce<Curso[]>(
-    (acc, cursoId) => {
-      const curso = cursos.find((curso) => curso.id === cursoId);
-      if (curso) {
-        acc.push(curso);
-      }
-      return acc;
-    },
-    []
+  const initialSelectedCourseIds = useMemo(
+    () => new Set(cursosMatriculadosIds),
+    [cursosMatriculadosIds]
   );
 
   const { user } = useAuthStore();
@@ -42,13 +36,20 @@ export const AddCursoPanel = () => {
   const { semestre, matriculado } = user || { semestre: 0, matriculado: false };
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
-  const [selectedCourses, setSelectedCourses] =
-    useState<Curso[]>(cursosMatriculados);
+  const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
   const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
   const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
-  const [filteredCourses, setFilteredCourses] = useState<Curso[]>(cursos);
+  const [filteredCourses, setFilteredCourses] = useState<Curso[]>(() =>
+    cursos.filter((curso) => !initialSelectedCourseIds.has(curso.id))
+  );
 
   const [confirmAddCourses, setConfirmAddCourses] = useState(false);
+
+  const filterAvailableCourses = useCallback(
+    (lista: Curso[]) =>
+      lista.filter((curso) => !initialSelectedCourseIds.has(curso.id)),
+    [initialSelectedCourseIds]
+  );
 
   const cursosAnteriores = useMemo(() => {
     return filteredCourses.filter((curso) => curso.semestre === semestre - 1);
@@ -144,11 +145,11 @@ export const AddCursoPanel = () => {
   const handleOnFilter = (semestre: number | null) => {
     setSemesterFilter(semestre);
     if (!semestre) {
-      setFilteredCourses(cursos);
+      setFilteredCourses(filterAvailableCourses(cursos));
       return;
     }
     const filtrados = cursos.filter((curso) => curso.semestre === semestre);
-    setFilteredCourses(filtrados);
+    setFilteredCourses(filterAvailableCourses(filtrados));
   };
 
   const handleClearFilters = () => {
@@ -158,15 +159,18 @@ export const AddCursoPanel = () => {
 
   const handleOnSearch = useCallback(
     (searchValue: string) => {
-      if (!searchValue) return setFilteredCourses(cursos);
+      if (!searchValue)
+        return setFilteredCourses(filterAvailableCourses(cursos));
 
       setFilteredCourses(
-        cursos.filter((curso) =>
-          curso.nombre.toLowerCase().includes(searchValue.toLowerCase())
+        filterAvailableCourses(
+          cursos.filter((curso) =>
+            curso.nombre.toLowerCase().includes(searchValue.toLowerCase())
+          )
         )
       );
     },
-    [cursos]
+    [cursos, filterAvailableCourses]
   );
 
   useEffect(() => {
@@ -179,13 +183,14 @@ export const AddCursoPanel = () => {
   }, [searchValue, handleOnSearch]);
 
   useEffect(() => {
-    setFilteredCourses(cursos);
-  }, [cursos]);
+    setFilteredCourses(filterAvailableCourses(cursos));
+  }, [cursos, filterAvailableCourses]);
   useEffect(() => {
     setAvailableCredits(creditosPermitidos);
   }, [creditosPermitidos]);
   useEffect(() => {
     setSelectedCredits(creditosMatriculados);
+    setSelectedCourses([]);
   }, [creditosMatriculados]);
 
   return (

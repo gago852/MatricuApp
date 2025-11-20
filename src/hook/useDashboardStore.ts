@@ -34,13 +34,25 @@ export const useDashboardStore = () => {
   };
 
   const startAddCursosMatriculados = async (cursosAdd: Curso[]) => {
-    if (!user) return;
+    if (!user || cursosAdd.length === 0) return;
     dispatch(setIsLoading(true));
 
-    dispatch(onAddCursosMatriculados(cursosAdd));
+    const cursosMatriculadosSet = new Set(cursosMatriculados);
+    const cursosNuevos: Curso[] = [];
+    cursosAdd.forEach((curso) => {
+      if (cursosMatriculadosSet.has(curso.id)) return;
+      cursosMatriculadosSet.add(curso.id);
+      cursosNuevos.push(curso);
+    });
 
-    // TODO: Agregar cursos a la base de datos
-    const creditosMatriculados = cursosAdd.reduce(
+    if (cursosNuevos.length === 0) {
+      dispatch(setIsLoading(false));
+      return;
+    }
+
+    dispatch(onAddCursosMatriculados(cursosNuevos));
+
+    const creditosNuevos = cursosNuevos.reduce(
       (total, curso) => total + curso.creditos,
       0
     );
@@ -61,11 +73,15 @@ export const useDashboardStore = () => {
         (estudiante) => estudiante.id === user.id
       );
       if (estudiante) {
-        const cursosMatriculadosIds = cursosAdd.map((curso) => curso.id);
+        const cursosPersistidosSet = new Set(estudiante.cursosMatriculados);
+        cursosNuevos.forEach((curso) => {
+          cursosPersistidosSet.add(curso.id);
+        });
         const nuevoEstudiante: Estudiante = {
           ...estudiante,
-          creditosMatriculados,
-          cursosMatriculados: cursosMatriculadosIds,
+          creditosMatriculados:
+            (estudiante.creditosMatriculados ?? 0) + creditosNuevos,
+          cursosMatriculados: Array.from(cursosPersistidosSet),
         };
         const nuevosEstudiantes = estudiantes.map((estudiante) => {
           if (estudiante.id === user.id) {
@@ -79,7 +95,9 @@ export const useDashboardStore = () => {
 
     const nuevoCursos = cursos.map((curso) => {
       if (
-        cursosAdd.some((cursoMatriculado) => cursoMatriculado.id === curso.id)
+        cursosNuevos.some(
+          (cursoMatriculado) => cursoMatriculado.id === curso.id
+        )
       ) {
         return {
           ...curso,
