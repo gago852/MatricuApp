@@ -9,8 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useAppSelector } from "@/hook/hooks";
+import { memo } from "react";
 
-export const Header = () => {
+export const Header = memo(() => {
   const { user: student, startLogout } = useAuthStore();
   const { creditosPermitidos } = useAppSelector((state) => state.dashboard);
 
@@ -71,4 +72,4 @@ export const Header = () => {
       </div>
     </header>
   );
-};
+});

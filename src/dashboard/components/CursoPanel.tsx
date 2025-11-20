@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar, List, Plus } from "lucide-react";
 import { CursoCard } from "./CursoCard";
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useDashboardStore } from "@/hook/useDashboardStore";
 import { useAppDispatch } from "@/hook/hooks";
 import { openCursoPanel } from "@/store/dashboard/addCursosSlice";
@@ -18,7 +18,7 @@ type ViewMode = "list" | "calendar";
 
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
-export const CursoPanel = () => {
+export const CursoPanel = memo(() => {
   const {
     cursosMatriculados: cursosMatriculadosIds,
     creditosMatriculados,
@@ -221,4 +221,4 @@ export const CursoPanel = () => {
       </div>
     </div>
   );
-};
+});
