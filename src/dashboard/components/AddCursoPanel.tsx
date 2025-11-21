@@ -20,8 +20,9 @@ export const AddCursoPanel = () => {
     handleOnClosePanel,
     confirmAddCoursesDialog,
     handleCancelConfirmDialog,
-    availableCredits,
+    // availableCredits,
     selectedCredits,
+    creditosPermitidos,
   } = useAddCursoPanel();
 
   return (
@@ -54,7 +55,7 @@ export const AddCursoPanel = () => {
               <p className="text-muted-foreground">
                 Creditos disponibles:{" "}
                 <span className="font-semibold text-foreground">
-                  {availableCredits}
+                  {creditosPermitidos}
                 </span>
               </p>
               <p className="text-muted-foreground">

@@ -27,7 +27,7 @@ export const useAddCursoPanel = () => {
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
-  const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
+  // const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
   const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
   const [filteredCourses, setFilteredCourses] = useState<Curso[]>(() =>
     cursos.filter((curso) => !initialSelectedCourseIds.has(curso.id))
@@ -40,34 +40,53 @@ export const useAddCursoPanel = () => {
     [initialSelectedCourseIds]
   );
 
-  const cursosAnteriores = useMemo(() => {
-    return filteredCourses.filter((curso) => curso.semestre === semestre - 1);
-  }, [filteredCourses, semestre]);
+  // const cursosAnteriores = useMemo(() => {
+  //   return filteredCourses.filter((curso) => curso.semestre === semestre - 1);
+  // }, [filteredCourses, semestre]);
 
-  const cursosPrerequisitos = useMemo(() => {
-    return cursosAnteriores.every((curso) => selectedCourses.includes(curso));
-  }, [selectedCourses, cursosAnteriores]);
+  // const cursosPrerequisitos = useMemo(() => {
+  //   return cursosAnteriores.every((curso) => selectedCourses.includes(curso));
+  // }, [selectedCourses, cursosAnteriores]);
 
   const isCursoHabilitado = (curso: (typeof cursos)[0]) => {
+    // metida de pata
+    // const yaSeleccionado = selectedCourses.includes(curso);
+
+    // if (yaSeleccionado) return true;
+
+    // if (curso.semestre === semestre - 1)
+    //   return (
+    //     selectedCredits + curso.creditos <= availableCredits &&
+    //     curso.matriculados < curso.limiteCupos
+    //   );
+
+    // if (curso.semestre >= semestre) {
+    //   return (
+    //     cursosPrerequisitos &&
+    //     selectedCredits + curso.creditos <= availableCredits &&
+    //     curso.matriculados < curso.limiteCupos
+    //   );
+    // }
+
+    // return false;
+
+    // correction
+
     const yaSeleccionado = selectedCourses.includes(curso);
 
+    // Permitir deshabilitar cursos ya seleccionados
     if (yaSeleccionado) return true;
 
-    if (curso.semestre === semestre - 1)
-      return (
-        selectedCredits + curso.creditos <= availableCredits &&
-        curso.matriculados < curso.limiteCupos
-      );
+    // Requisito: Solo cursos del semestre actual
+    if (curso.semestre !== semestre) return false;
 
-    if (curso.semestre >= semestre) {
-      return (
-        cursosPrerequisitos &&
-        selectedCredits + curso.creditos <= availableCredits &&
-        curso.matriculados < curso.limiteCupos
-      );
-    }
+    // Requisito: Cursos con cupos disponibles
+    if (curso.matriculados >= curso.limiteCupos) return false;
 
-    return false;
+    // Requisito: No exceder límite de créditos
+    if (selectedCredits + curso.creditos > creditosPermitidos) return false;
+
+    return true;
   };
 
   const handleToggleCourse = (cursoFunction: Curso) => {
@@ -118,7 +137,7 @@ export const useAddCursoPanel = () => {
       return;
     }
 
-    if (selectedCredits > availableCredits) {
+    if (selectedCredits > creditosPermitidos) {
       toast.error("No puedes agregar mas creditos de los permitidos");
       return;
     }
@@ -168,18 +187,18 @@ export const useAddCursoPanel = () => {
     };
   }, [searchValue, handleOnSearch]);
 
-  useEffect(() => {
-    setFilteredCourses(filterAvailableCourses(cursos));
-  }, [cursos, filterAvailableCourses]);
+  // useEffect(() => {
+  //   setFilteredCourses(filterAvailableCourses(cursos));
+  // }, [cursos, filterAvailableCourses]);
 
-  useEffect(() => {
-    setAvailableCredits(creditosPermitidos);
-  }, [creditosPermitidos]);
+  // useEffect(() => {
+  //   setAvailableCredits(creditosPermitidos);
+  // }, [creditosPermitidos]);
 
-  useEffect(() => {
-    setSelectedCredits(creditosMatriculados);
-    setSelectedCourses([]);
-  }, [creditosMatriculados]);
+  // useEffect(() => {
+  //   setSelectedCredits(creditosMatriculados);
+  //   setSelectedCourses([]);
+  // }, [creditosMatriculados]);
 
   return {
     // Properties
@@ -188,7 +207,8 @@ export const useAddCursoPanel = () => {
     filteredCourses,
     selectedCourses,
     confirmAddCourses,
-    availableCredits,
+    // availableCredits,
+    creditosPermitidos,
     selectedCredits,
 
     // Methods

@@ -6,7 +6,7 @@ export const cursosMock = [
     creditos: 3,
     semestre: 1,
     limiteCupos: 30,
-    matriculados: 25,
+    matriculados: 30,
   },
   {
     id: 2,
