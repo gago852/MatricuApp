@@ -27,6 +27,8 @@ export const useAddCursoPanel = () => {
   const [searchValue, setSearchValue] = useState("");
   const [semesterFilter, setSemesterFilter] = useState<number | null>(null);
   const [selectedCourses, setSelectedCourses] = useState<Curso[]>([]);
+  console.log(selectedCourses);
+
   // const [availableCredits, setAvailableCredits] = useState(creditosPermitidos);
   const [selectedCredits, setSelectedCredits] = useState(creditosMatriculados);
   const [filteredCourses, setFilteredCourses] = useState<Curso[]>(() =>
@@ -85,25 +87,27 @@ export const useAddCursoPanel = () => {
 
     // Requisito: No exceder límite de créditos
     if (selectedCredits + curso.creditos > creditosPermitidos) return false;
+    console.log({ curso, selectedCredits, creditosPermitidos });
 
     return true;
   };
 
   const handleToggleCourse = (cursoFunction: Curso) => {
     if (selectedCourses.includes(cursoFunction)) {
-      const cursosToRemove = selectedCourses.filter(
-        (curso) => curso.semestre <= cursoFunction.semestre
-      );
-      const creditos = cursosToRemove.reduce(
-        (total, curso) => total + curso.creditos,
-        0
-      );
+      // const cursosToRemove = selectedCourses.filter(
+      //   (curso) => curso.semestre <= cursoFunction.semestre
+      // );
+      const creditos =
+        selectedCourses.reduce((total, curso) => total + curso.creditos, 0) +
+        creditosMatriculados;
 
-      const creditosToRemove = cursoFunction.creditos;
+      // const creditosToRemove = cursoFunction.creditos;
 
-      setSelectedCredits(creditos - creditosToRemove);
+      setSelectedCredits(creditos - cursoFunction.creditos);
+      console.log({ creditos, cursoCreditos: cursoFunction.creditos });
+
       setSelectedCourses(
-        cursosToRemove.filter((curso) => curso.id !== cursoFunction.id)
+        selectedCourses.filter((curso) => curso.id !== cursoFunction.id)
       );
     } else {
       const creditos = cursoFunction.creditos;
