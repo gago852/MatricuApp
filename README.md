@@ -1,190 +1,177 @@
 # MatricuApp
 
-Aplicación de matriculación académica construida con **React + TypeScript + Vite**, que simula el flujo de inscripción de cursos de un estudiante para un semestre académico.
+Aplicación de matriculación académica construida como **monorepo** con un frontend en **React + TypeScript + Vite** y un backend real en **Spring Boot + PostgreSQL**.
 
-El objetivo principal es cubrir los requerimientos funcionales de la prueba técnica y, al mismo tiempo, mostrar buenas prácticas en organización de código, manejo de estado global y validación de reglas de negocio.
+El objetivo principal es cubrir los requerimientos funcionales de la prueba técnica y, al mismo tiempo, mostrar buenas prácticas en organización de código, manejo de estado global, autenticación con JWT y arquitectura por dominio en el backend.
 
-## 🚀 Instrucciones para ejecutar la aplicación
+---
+
+## Estructura del proyecto
+
+```
+MatricuApp/
+├── frontend/        # React + TypeScript + Vite
+└── backend/         # Spring Boot 4 + Java 25 + PostgreSQL
+```
+
+---
+
+## Despliegue
+
+| Capa | Plataforma | Dominio |
+|------|-----------|---------|
+| Frontend | Netlify | `matricuapp.gabogomez.dev` |
+| Backend | Render | `api-matricuapp.gabogomez.dev` |
+| Base de datos | Neon (PostgreSQL serverless) | — |
+
+---
+
+## Ejecutar en local
 
 ### Requisitos previos
 
-- Node.js 18+ instalado.
-- pnpm instalado (el proyecto usa `pnpm-lock.yaml`).
+- Node.js 18+ y pnpm
+- Java 25
+- Docker (para la base de datos local)
+
+### 1. Base de datos (Docker)
 
 ```bash
-npm install -g pnpm
+cd backend
+docker compose up -d
 ```
 
-### Instalación de dependencias
+Levanta un PostgreSQL en `localhost:5432` con usuario/contraseña/db `matricuapp`.
+
+### 2. Backend
 
 ```bash
+cd backend
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+El servidor arranca en `http://localhost:8080`. El perfil `dev` conecta automáticamente al docker-compose local sin necesidad de configurar variables de entorno.
+
+### 3. Frontend
+
+```bash
+cd frontend
 pnpm install
-```
-
-### Ejecutar en modo desarrollo
-
-```bash
 pnpm dev
 ```
 
-La aplicación quedará disponible (por defecto) en:
+La aplicación queda disponible en `http://localhost:5173`.
 
-- `http://localhost:5173`
+### Credenciales de prueba
 
-### Build para producción
+| Campo | Valor |
+|-------|-------|
+| ID de estudiante | `101` |
+| Contraseña | `123456` |
 
-```bash
-pnpm build
+---
+
+## Variables de entorno
+
+### Frontend
+
+| Variable | Dev | Prod (Netlify) |
+|----------|-----|----------------|
+| `VITE_API_BASE_URL` | `http://localhost:8080/api` | `https://api-matricuapp.gabogomez.dev/api` |
+
+### Backend
+
+| Variable | Dev (default) | Prod (Render) |
+|----------|--------------|---------------|
+| `DATABASE_URL` | `jdbc:postgresql://localhost:5432/matricuapp` | Connection string Neon |
+| `DATABASE_USERNAME` | `matricuapp` | Usuario Neon |
+| `DATABASE_PASSWORD` | `matricuapp` | Contraseña Neon |
+| `JWT_SECRET` | `dev-secret-key-...` | String seguro >= 256 bits |
+| `SPRING_PROFILES_ACTIVE` | `dev` | `prod` |
+| `PORT` | `8080` | Inyectado por Render |
+
+---
+
+## API REST
+
+| Método | Endpoint | Auth | Descripción |
+|--------|----------|------|-------------|
+| POST | `/api/auth/login` | No | Login devuelve token JWT |
+| GET | `/api/auth/renew` | Bearer | Renueva el JWT |
+| GET | `/api/cursos` | Bearer | Lista todos los cursos |
+| GET | `/api/estudiantes/{id}` | Bearer | Datos del estudiante |
+| POST | `/api/estudiantes/{id}/matricula` | Bearer | Agregar cursos |
+| DELETE | `/api/estudiantes/{id}/matricula/{cursoId}` | Bearer | Quitar un curso |
+
+### Autenticación JWT
+
+- El login devuelve un token con expiración de **1 hora**.
+- El frontend lo envía en el header `Authorization: Bearer <token>`.
+- Token vencido -> el backend responde `401` -> el frontend cierra sesión automáticamente.
+- `checkAuthSession` llama a `/api/auth/renew` al recargar la página para renovar el token silenciosamente.
+
+---
+
+## Arquitectura backend
+
+Organización por dominio/feature:
+
+```
+src/main/java/com/matricuapp/matricuapp_backend/
+├── auth/          # Login, JWT, filtro de autenticación
+├── curso/         # Entidad, repositorio, servicio, controlador
+├── estudiante/    # Entidad, repositorio, servicio, controlador
+├── config/        # AppProperties, CORS, Security
+└── exception/     # GlobalExceptionHandler, BusinessException
 ```
 
-### Previsualizar build de producción
+**Stack:** Spring Boot 4.0.5 · Spring Security · Spring Data JPA · Hibernate 7 · JJWT 0.12.6 · BCrypt · PostgreSQL
 
-```bash
-pnpm preview
+---
+
+## Arquitectura frontend
+
+```
+src/
+├── api/           # matricuApi.ts — cliente axios con interceptores JWT
+├── auth/          # Página de login
+├── dashboard/     # Página principal y componentes de matrícula
+├── hook/          # useAuthStore, useDashboardStore
+├── store/         # Redux Toolkit (authSlice, dashboardSlice)
+├── router/        # AppRouter
+└── types/         # Tipos TypeScript compartidos
 ```
 
----
-
-## ✅ Cobertura de requerimientos funcionales
-
-A continuación se detalla cómo se implementó cada requerimiento de la prueba:
-
-### 1. Inicio de sesión (opcional)
-
-- El login se implementa en `src/auth/LoginPage.tsx` y se orquesta con el hook `useAuthStore` (`src/hook/useAuthStore.ts`).
-- El usuario ingresa:
-  - `ID de estudiante` (numérico).
-  - `Contraseña` (fija para la prueba: `123456`).
-- Los datos de estudiantes se leen desde `localStorage` (llave `estudiantes`) y se validan con esquemas de Zod (`EstudianteAuthSchemaArray`).
-- El estado de autenticación se maneja con Redux Toolkit en `authSlice` (`src/store/auth/authSlice.ts`), incluyendo los estados `checking | authenticated | not-authenticated`.
-- Se persiste el `userId` en `localStorage` para mantener la sesión (ver `checkAuthSession` en `useAuthStore`).
-
-### 2. Listado de cursos disponibles
-
-- Los cursos se definen y validan con el tipo `Curso` (`src/types/types.ts`) y los esquemas Zod (`CursoSchemaArray`).
-- Se cargan desde `localStorage` (llave `cursos`) en el helper `loadCursos` (`src/helpers/loadDashboard.ts`).
-- El estado global de cursos vive en `dashboardSlice` (`src/store/dashboard/dashboardSlice.ts`).
-- En la UI, el listado principal se muestra en el panel de cursos (`CursoPanel` y componentes dentro de `src/dashboard/components/`).
-- Cada curso incluye:
-  - `nombre`, `codigo`, `creditos`, `semestre`.
-  - `limiteCupos` y `matriculados` para validar disponibilidad de cupos.
-
-### 3. Asignación de cursos
-
-- La selección de cursos se realiza desde el panel lateral `AddCursoPanel` (`src/dashboard/components/AddCursoPanel.tsx`).
-- La lógica de selección, filtros y validaciones de créditos vive en el hook `useAddCursoPanel` (`src/dashboard/hook/useAddCursoPanel.ts`).
-- El usuario puede:
-  - Buscar cursos por nombre.
-  - Filtrar por semestre.
-  - Seleccionar múltiples cursos antes de confirmar.
-- Una vez confirmada la selección, se llama a `startAddCursosMatriculados` en `useDashboardStore` (`src/hook/useDashboardStore.ts`), que:
-  - Actualiza el estado global (`dashboardSlice.onAddCursosMatriculados`).
-  - Persiste la nueva matrícula del estudiante y los cursos en `localStorage`.
-
-### 4. Validación de requisitos
-
-Las reglas de negocio se centralizan principalmente en `useAddCursoPanel`, `useDashboardStore` y `dashboardSlice`:
-
-- **Estudiante matriculado en el periodo académico**
-  - El objeto `Estudiante` (`src/types/types.ts`) tiene la propiedad `matriculado`.
-  - Antes de permitir la confirmación de cursos, `handleAddCourses` en `useAddCursoPanel` valida `matriculado`; si es `false` se muestra un error con `toast`.
-
-- **Solo cursos del semestre actual**
-  - Se usa la propiedad `semestre` del estudiante autenticado y de cada curso.
-  - En `isCursoHabilitado` (`useAddCursoPanel`) se controla qué cursos pueden seleccionarse en función del semestre actual del estudiante y de potenciales prerequisitos.
-
-- **No permitir cursos sin cupos disponibles**
-  - Cada curso tiene `limiteCupos` y `matriculados`.
-  - `isCursoHabilitado` verifica `curso.matriculados < curso.limiteCupos` antes de habilitar la selección.
-
-- **Prevenir más créditos que el límite establecido**
-  - `dashboardSlice` mantiene `creditosMatriculados` y `creditosPermitidos`.
-  - `loadEstudiante` carga `creditosPermitidos` del estudiante autenticado y también hidrata los cursos ya matriculados.
-  - En `useAddCursoPanel`:
-    - `availableCredits` y `selectedCredits` se actualizan en tiempo real.
-    - Antes de abrir el diálogo de confirmación, `handleAddCourses` valida que `selectedCredits <= availableCredits` y muestra un error en caso contrario.
-
-### 5. Confirmación de matrícula y persistencia
-
-- Al presionar "Agregar" en el panel lateral, se abre un **diálogo de confirmación** que resume:
-  - Cantidad de cursos a matricular.
-  - Total de créditos a agregar.
-  - Listado de los cursos seleccionados.
-- Si el usuario confirma:
-  - Se ejecuta `confirmAddCoursesDialog` en `useAddCursoPanel`.
-  - Se dispara `startAddCursosMatriculados` en `useDashboardStore`.
-  - Se actualiza y persiste:
-    - El estudiante (créditos y lista de `cursosMatriculados`).
-    - La información de cursos (`matriculados`) en `localStorage`.
+**Stack:** React 18 · TypeScript · Redux Toolkit · axios · Vite · Tailwind CSS · shadcn/ui
 
 ---
 
-## 🧱 Decisiones de diseño y arquitectura
+## Reglas de negocio (validadas en el backend)
 
-- **React + TypeScript + Vite**
-  - Vite ofrece un entorno de desarrollo muy rápido y simple.
-  - TypeScript ayuda a modelar correctamente entidades como `Curso` y `Estudiante` y reduce errores de negocio.
-
-- **Redux Toolkit para estado global**
-  - Se utiliza `@reduxjs/toolkit` para manejar estado de autenticación (`authSlice`), dashboard (`dashboardSlice`) y apertura del panel de cursos (`cursoPanelSlice`).
-  - Facilita mantener una única fuente de la verdad para:
-    - Usuario autenticado.
-    - Cursos disponibles.
-    - Matrículas y créditos.
-
-- **Custom hooks como fachada sobre Redux**
-  - `useAuthStore` y `useDashboardStore` encapsulan el acceso a Redux y exponen una API de dominio (por ejemplo `startLogin`, `loadDashBoard`, `startAddCursosMatriculados`).
-  - Esto desacopla los componentes de la implementación concreta del store y mejora la testabilidad.
-
-- **Validación con Zod**
-  - Se utilizan esquemas (`CursoSchemaArray`, `EstudianteSchemaArray`, `EstudianteAuthSchemaArray`) para validar la forma de los datos que vienen del "backend" (simulado con `localStorage`).
-  - Esto evita que datos corruptos rompan la aplicación y simplifica el manejo de errores.
-
-- **LocalStorage como backend simulado**
-  - Para alinearse con la prueba técnica, se usa `localStorage` como fuente de verdad de estudiantes y cursos.
-  - Toda mutación relevante (matrículas, créditos, cupos) se persiste ahí para mantener el estado entre recargas.
-
-- **División por responsabilidad**
-  - `src/auth`: pantallas y lógica de autenticación.
-  - `src/dashboard`: página principal y componentes del flujo de matrícula.
-  - `src/store`: slices de Redux y configuración del store.
-  - `src/hook`: hooks compartidos (`useAuthStore`, `useDashboardStore`, etc.).
-  - `src/helpers`: funciones de carga/hidratación de datos desde `localStorage`.
-  - `src/types` y `src/mock`: tipado fuerte y datos de ejemplo.
-
-- **UI desacoplada de la lógica**
-  - Componentes como `AddCursoPanel`, `CursoPanel` y tarjetas de curso se centran en la presentación.
-  - La lógica de negocio vive en los hooks y slices, siguiendo un enfoque cercano a **container/presenter**.
+- El estudiante debe estar activo (`matriculado = true`).
+- Solo puede matricular cursos de su semestre.
+- El curso debe tener cupos disponibles.
+- No puede duplicar un curso ya matriculado.
+- Los créditos totales no pueden superar el límite permitido.
 
 ---
 
-## ⚠️ Limitaciones y aspectos no implementados
+## Despliegue en producción
 
-- **Backend real**
-  - No hay integración con un servidor real ni base de datos. Todo se simula con `localStorage`.
+### Render (backend)
 
-- **Manejo avanzado de errores/red**
-  - Se asume que la lectura/escritura en `localStorage` siempre está disponible.
-  - No se implementan estrategias avanzadas de reintento ni reportes de error a un sistema externo.
+1. Conectar repositorio -> seleccionar directorio `backend/`
+2. Render detecta el `Dockerfile` automáticamente
+3. Configurar variables: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `SPRING_PROFILES_ACTIVE=prod`
 
-- **Gestión de prerequisitos compleja**
-  - Se incluye una lógica básica para que los cursos de semestres superiores requieran haber seleccionado los del semestre anterior, pero no se maneja un grafo complejo de prerequisitos.
+### Netlify (frontend)
 
-- **Validaciones adicionales de negocio**
-  - No se implementan reglas como horarios solapados, incompatibilidades entre cursos, etc., ya que no forman parte explícita del alcance de la prueba.
+1. Conectar repositorio -> directorio base: `frontend/`
+2. Build command: `pnpm build` · Publish directory: `dist`
+3. Variable de entorno: `VITE_API_BASE_URL=https://api-matricuapp.gabogomez.dev/api`
+4. El archivo `netlify.toml` ya incluye la regla de redirect para SPA
 
-- **Accesibilidad y tests automatizados**
-  - La UI está pensada para ser usable, pero no se ha hecho un trabajo exhaustivo de accesibilidad (ARIA, navegación por teclado, etc.).
-  - No se incluyen tests automatizados por temas de tiempo, aunque la estructura del proyecto facilita añadir pruebas unitarias a hooks y slices.
+### DNS
 
----
-
-## 📝 Notas finales
-
-Este proyecto busca priorizar:
-
-- Claridad en la separación de responsabilidades.
-- Modelado explícito de las reglas de negocio de matrícula.
-- Persistencia simple pero coherente del estado en `localStorage`.
-
-Cualquier mejora adicional (nuevas reglas, endpoints reales, tests) puede construirse fácilmente sobre la arquitectura actual.
+- `matricuapp.gabogomez.dev` -> CNAME al dominio de Netlify
+- `api-matricuapp.gabogomez.dev` -> CNAME al dominio de Render

@@ -22,3 +22,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw.cmd
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+.agent/
+
+.claude/
+.plan/
