@@ -40,10 +40,10 @@ updates:
           - "org.springframework*"
 
   # GitHub Actions (opcional pero recomendado)
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "ci"
+  # - package-ecosystem: "github-actions"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #   labels:
+  #     - "dependencies"
+  #     - "ci"
