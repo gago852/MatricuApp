@@ -39,7 +39,7 @@ updates:
           - "org.springframework.boot*"
           - "org.springframework*"
 
-  # GitHub Actions (opcional pero recomendado)
+  # GitHub Actions (opcional pero recomendado) 
   # - package-ecosystem: "github-actions"
   #   directory: "/"
   #   schedule:
