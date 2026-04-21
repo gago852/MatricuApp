@@ -38,6 +38,9 @@ updates:
         patterns:
           - "org.springframework.boot*"
           - "org.springframework*"
+      jjwt:
+        patterns:
+          - "io.jsonwebtoken*"
 
   # GitHub Actions (opcional pero recomendado) 
   # - package-ecosystem: "github-actions"
