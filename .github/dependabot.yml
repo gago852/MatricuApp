@@ -1,9 +1,9 @@
 version: 2
 
 updates:
-  # Frontend — npm/package.json
+  # Frontend — pnpm workspace (lockfile lives at repo root)
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
