@@ -1,9 +1,9 @@
 version: 2
 
 updates:
-  # Frontend — pnpm workspace (lockfile lives at repo root)
+  # Frontend — pnpm project (lockfile lives in /frontend)
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/frontend"
     target-branch: "dev"
     schedule:
       interval: "weekly"
