@@ -4,6 +4,7 @@ updates:
   # Frontend — pnpm workspace (lockfile lives at repo root)
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -26,6 +27,7 @@ updates:
   # Backend — Maven/pom.xml
   - package-ecosystem: "maven"
     directory: "/backend"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
       day: "monday"
