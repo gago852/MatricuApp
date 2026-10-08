@@ -23,7 +23,7 @@ updates:
       dev-tooling:
         patterns:
           - "vite"
-          - "eslint*"
+          - "oxlint"
           - "@vitejs/*"
 
   # Backend — Maven/pom.xml
